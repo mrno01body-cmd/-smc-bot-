@@ -1,0 +1,62 @@
+import asyncio
+from metaapi_cloud_sdk import MetaApi
+import datetime
+import os
+
+METAAPI_TOKEN = os.environ.get("METAAPI_TOKEN", "EyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI4OGU2Y2VlZGQyYWIwZjg2YWUzZDA1Y2ZlNWVmOTlmZSIsImFjY2Vzc1J1bGVzIjpbeyJpZCI6InRyYWRpbmctYWNjb3VudC1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVzdC1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcnBjLWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6d3M6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFhcGktcmVhbC10aW1lLXN0cmVhbWluZy1hcGkiLCJtZXRob2RzIjpbIm1ldGFhcGktYXBpOndzOnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19LHsiaWQiOiJtZXRhc3RhdHMtYXBpIiwibWV0aG9kcyI6WyJtZXRhc3RhdHMtYXBpOnJlc3Q6ZGVhbGluZzoqOioiLCJtZXRhc3RhdHMtYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6InJpc2stbWFuYWdlbWVudC1hcGkiLCJtZXRob2RzIjpbInJpc2stbWFuYWdlbWVudC1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoibXQtbWFuYWdlci1hcGkiLCJtZXRob2RzIjpbIm10LW1hbmFnZXItYXBpOnJlc3Q6ZGVhbGluZzoqOioiLCJtdC1tYW5hZ2VyLWFwaTpyZXN0OnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19XSwiaWdub3JlUmF0ZUxpbWl0cyI6ZmFsc2UsInRva2VuSWQiOiIyMDIxMDIxMyIsImltcGVyc29uYXRlZCI6ZmFsc2UsInJlYWxVc2VySWQiOiI4OGU2Y2VlZGQyYWIwZjg2YWUzZDA1Y2ZlNWVmOTlmZSIsImlhdCI6MTc4MTUxMTM2MX0.fSbpMQTAzJx3663CLbBDXUHNVbJkoFdCNYyY95vTmpVQbxPqVN7eEqWVM72kKNU_owii7uw2qzNtmF-0KFrBWuAGy983IWF8HQxI5VkWTFtVGk6elHZtfVcAwkaazvURmicPGqnUUtIxdQbmCT-tjc39i-xhiCLSVuL01Mucp1YB8VUhUu6Lkb5CPJ9gklXuS-CohzyPONQCrVfvs1GTkgBU4cbkxV9_3_stP9Ga4WUxVm0rw0lkpY6VuE6Be4s2Y0ftZI4QG0fWqtRiAtjnbJoegBofIjDL-IzT4vox7sMmUNp2cKFgGpraA7Fz7Q4lncZuzb6J6zpQu4nD_hUgk7EMcbDiNYNbwm2hJLnd6bLIpL-72YLDqvDvFhKAsSB95qMfffgKXx__HyS_BUNsUKtFJkvL4DDQhWvn_0r-St61UTD2ThZxpSQCENBiJIUxVOAIX0uEN1xq-bOS-Miv9zKKtCye1sVVS1vNKnp66ifn3ZAyAo9HRAkrFGFAjG8FG74t86aMwPJRkgS7EFfO4XOam_CTR806uulEnVFEnlEmkTE2GFD360ciKK5y3UPyF8Kh27S1xVS12-C5E6ljMm9RinHvhpV17tQC_jGwUBOjzTby2cQmdokHIabA70vRAeS3L5qXMjQCvvdE4c12d9gdpj5edaDOtDSAshvJJ8c")
+ACCOUNT_ID = os.environ.get("ACCOUNT_ID", "7f3b6029-19d0-4c1e-ab95-0b5bbaba6626")
+SYMBOL = "XAUUSD"
+LOT_SIZE = 0.01
+
+async def analyze_and_trade():
+    api = MetaApi(METAAPI_TOKEN)
+    try:
+        print("🔄 Inajifungua na kuunganisha kwenye akaunti ya Exness...")
+        account = await api.metatrader_account_api.get_account(ACCOUNT_ID)
+        connection = account.get_rpc_connection()
+        await connection.connect()
+        await connection.wait_synchronized()
+        
+        print("✅ Uunganishaji umefanikiwa! Robot ya SMC ipo LIVE kwenye Cloud sasa.")
+        is_trading = False
+
+        while True:
+            try:
+                candles = await connection.get_candles(SYMBOL, 'm5', 5)
+                if len(candles) < 3:
+                    await asyncio.sleep(10)
+                    continue
+                
+                c1, c2, c3 = candles[-3], candles[-2], candles[-1]
+                info = await connection.get_account_information()
+                print(f"🕒 [{datetime.datetime.now().strftime('%H:%M:%S')}] Equity: ${info['equity']} | Inasubiri setup...")
+
+                # SMC FVG Logic
+                if c1['low'] > c3['high'] and not is_trading:
+                    print("🚨 SMC BEARISH FVG! Inatuma order ya SELL...")
+                    await connection.create_market_sell_order(SYMBOL, LOT_SIZE)
+                    is_trading = True
+                elif c1['high'] < c3['low'] and not is_trading:
+                    print("🚨 SMC BULLISH FVG! Inatuma order ya BUY...")
+                    await connection.create_market_buy_order(SYMBOL, LOT_SIZE)
+                    is_trading = True
+                else:
+                    if is_trading:
+                        positions = await connection.get_positions()
+                        if not any(p['symbol'] == SYMBOL for p in positions):
+                            is_trading = False
+
+                await asyncio.sleep(15)
+            except Exception as le:
+                print(f"⚠️ Hitilafu ndogo soko likisoma: {str(le)}")
+                await asyncio.sleep(5)
+    except Exception as e:
+        print(f"❌ Kushindwa kuwasha kabisa kwenye Cloud: {str(e)}")
+    finally:
+        try:
+            await api.close()
+        except:
+            pass
+
+if __name__ == "__main__":
+    asyncio.run(analyze_and_trade())
